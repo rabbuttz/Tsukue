@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import type { PlacedWidget } from '../storage/deskLayout';
+import type { Task } from '../types';
 import { useObjectMove } from '../hooks/useObjectMove';
 import { useCornerResize } from '../hooks/useCornerResize';
 import { WidgetView } from './WidgetView';
@@ -7,6 +8,8 @@ import { WidgetView } from './WidgetView';
 interface Props {
   widget: PlacedWidget;
   now: number;
+  /** タスク連動ウィジェット用の全タスク。 */
+  tasks: Task[];
   onMove: (id: string, x: number, y: number) => void;
   onRemove: (id: string) => void;
   onResize: (id: string, scale: number) => void;
@@ -20,7 +23,7 @@ const MAX_SCALE = 2.4;
  * 中身（ポモドーロ／時計など）は kind で出し分ける。
  * リサイズは中身の自然サイズに対する等倍スケール（transform: scale）で行う。
  */
-export function DeskWidget({ widget, now, onMove, onRemove, onResize }: Props) {
+export function DeskWidget({ widget, now, tasks, onMove, onRemove, onResize }: Props) {
   const bodyRef = useRef<HTMLDivElement>(null);
   // 中身の自然サイズ（スケール1のときのpx）。これに scale を掛けて枠サイズを決める。
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
@@ -81,7 +84,7 @@ export function DeskWidget({ widget, now, onMove, onRemove, onResize }: Props) {
         style={{ transform: `scale(${scale})`, transformOrigin: 'top left' }}
       >
         <div className="widget__body" ref={bodyRef}>
-          <WidgetView kind={widget.kind} now={now} />
+          <WidgetView kind={widget.kind} now={now} tasks={tasks} />
         </div>
       </div>
 

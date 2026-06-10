@@ -48,7 +48,15 @@ export function DeskView({ store, now }: Props) {
 
   const widgets = useDeskWidgets();
   const widgetCounts = useMemo(() => {
-    const c: Record<WidgetKind, number> = { pomodoro: 0, clock: 0, digitalClock: 0, alarm: 0 };
+    const c: Record<WidgetKind, number> = {
+      pomodoro: 0,
+      clock: 0,
+      digitalClock: 0,
+      alarm: 0,
+      ambient: 0,
+      focusMeter: 0,
+      plant: 0,
+    };
     for (const w of widgets.widgets) c[w.kind]++;
     return c;
   }, [widgets.widgets]);
@@ -253,6 +261,7 @@ export function DeskView({ store, now }: Props) {
         <WidgetPicker
           anchor={pickerAnchor}
           now={now}
+          tasks={store.tasks}
           counts={widgetCounts}
           onPickStart={beginWidgetAdd}
           onClose={() => setPickerAnchor(null)}
@@ -280,6 +289,7 @@ export function DeskView({ store, now }: Props) {
           <DeskSurface
             ref={deskRef}
             tasks={inProgress}
+            allTasks={store.tasks}
             now={now}
             dragId={dragId}
             hovered={hover === 'desk'}
@@ -344,7 +354,7 @@ export function DeskView({ store, now }: Props) {
           className="widget-drag-clone"
           style={{ left: widgetDrag.x, top: widgetDrag.y }}
         >
-          <WidgetView kind={widgetDrag.kind} now={now} />
+          <WidgetView kind={widgetDrag.kind} now={now} tasks={store.tasks} />
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { WIDGET_CATALOG } from '../storage/deskLayout';
 import type { WidgetKind } from '../storage/deskLayout';
+import type { Task } from '../types';
 import { WidgetView } from './WidgetView';
 
 interface Props {
@@ -9,6 +10,8 @@ interface Props {
   anchor: DOMRect;
   /** ライブ更新用の現在時刻（プレビューの時計を動かす）。 */
   now: number;
+  /** タスク連動ウィジェットのプレビュー用の全タスク。 */
+  tasks: Task[];
   /** kind ごとの現在の設置数（バッジ表示用）。 */
   counts: Record<WidgetKind, number>;
   /** プレビューを掴んだ瞬間（ここから机へのドラッグ＆ドロップが始まる）。 */
@@ -25,12 +28,14 @@ const STAGE_H = 116;
 function PreviewTile({
   kind,
   now,
+  tasks,
   label,
   count,
   onPickStart,
 }: {
   kind: WidgetKind;
   now: number;
+  tasks: Task[];
   label: string;
   count: number;
   onPickStart: (kind: WidgetKind, e: React.PointerEvent) => void;
@@ -58,7 +63,7 @@ function PreviewTile({
       <span className="wpick__stage">
         <span className="wpick__scale" style={{ transform: `scale(${scale})` }}>
           <span ref={natRef} className="wpick__nat">
-            <WidgetView kind={kind} now={now} />
+            <WidgetView kind={kind} now={now} tasks={tasks} />
           </span>
         </span>
       </span>
@@ -71,7 +76,7 @@ function PreviewTile({
 }
 
 /** 「＋ ウィジェット」から開く、実物プレビューをドラッグ＆ドロップで机に置くポップオーバー。 */
-export function WidgetPicker({ anchor, now, counts, onPickStart, onClose }: Props) {
+export function WidgetPicker({ anchor, now, tasks, counts, onPickStart, onClose }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -104,6 +109,7 @@ export function WidgetPicker({ anchor, now, counts, onPickStart, onClose }: Prop
             key={item.kind}
             kind={item.kind}
             now={now}
+            tasks={tasks}
             label={item.label}
             count={counts[item.kind]}
             onPickStart={onPickStart}

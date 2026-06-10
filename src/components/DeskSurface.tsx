@@ -8,6 +8,8 @@ import { DeskItem } from './DeskItem';
 
 interface Props {
   tasks: Task[];
+  /** タスク連動ウィジェット（集中時間メーター・盆栽）用の全タスク（完了分も含む）。 */
+  allTasks: Task[];
   now: number;
   dragId: string | null;
   hovered: boolean;
@@ -31,6 +33,7 @@ interface Props {
 export const DeskSurface = forwardRef<HTMLDivElement, Props>(function DeskSurface(
   {
     tasks,
+    allTasks,
     now,
     dragId,
     hovered,
@@ -69,6 +72,7 @@ export const DeskSurface = forwardRef<HTMLDivElement, Props>(function DeskSurfac
           key={w.id}
           widget={w}
           now={now}
+          tasks={allTasks}
           onMove={onWidgetMove}
           onRemove={onWidgetRemove}
           onResize={onWidgetResize}

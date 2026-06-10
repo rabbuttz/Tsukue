@@ -1977,3 +1977,257 @@
     min-height: 320px;
   }
 }
+
+/* ---------- 環境音プレーヤー（.ambient） ---------- */
+/* AMBIENT-PLAYER-CSS-START（このブロック内のみ ambient エージェントが編集する） */
+.ambient {
+  --ambient-accent: #4262ff;
+  --ambient-soft: #eef1ff;
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 16px 14px;
+  border-radius: var(--r-xxl);
+  background: linear-gradient(180deg, #ffffff 0%, var(--ambient-soft) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-3);
+  transition: box-shadow 200ms ease;
+}
+.ambient--playing {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ambient-accent) 20%, transparent),
+    var(--shadow-3);
+}
+
+.ambient__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: color-mix(in srgb, var(--ambient-accent) 70%, var(--ink));
+}
+.ambient__face {
+  font-size: 16px;
+}
+.ambient--playing .ambient__face {
+  display: inline-block;
+  animation: ambient-sway 2.4s ease-in-out infinite;
+}
+@keyframes ambient-sway {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+
+.ambient__presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+}
+.ambient__preset {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 4px 6px;
+  border-radius: var(--r-md); /* カード20−padding16 の同心則より中型コントロール値を優先 */
+  border: 1px solid var(--hairline-soft);
+  background: rgba(255, 255, 255, 0.7);
+  font-family: inherit;
+  color: var(--slate);
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease,
+    transform 120ms ease;
+}
+.ambient__preset:hover {
+  background: #ffffff;
+  border-color: var(--hairline);
+}
+.ambient__preset:active {
+  transform: scale(0.95);
+}
+.ambient__preset--active {
+  border-color: color-mix(in srgb, var(--ambient-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--ambient-accent) 8%, #ffffff);
+  color: color-mix(in srgb, var(--ambient-accent) 80%, var(--ink));
+}
+.ambient__preset-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+.ambient__preset-label {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ambient__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.ambient__toggle {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--r-full);
+  font-size: 13px;
+  color: #ffffff;
+  background: var(--ambient-accent);
+  box-shadow: 0 6px 14px -4px color-mix(in srgb, var(--ambient-accent) 60%, transparent);
+  cursor: pointer;
+  transition: transform 120ms ease, filter 150ms ease;
+}
+.ambient__toggle:hover {
+  filter: brightness(1.08);
+}
+.ambient__toggle:active {
+  transform: scale(0.92);
+}
+.ambient__vol-icon {
+  font-size: 13px;
+}
+.ambient__vol {
+  flex: 1;
+  min-width: 0;
+  accent-color: var(--ambient-accent);
+  cursor: pointer;
+}
+/* AMBIENT-PLAYER-CSS-END */
+
+/* ---------- 集中時間メーター（.fmeter） ---------- */
+/* FOCUS-METER-CSS-START（このブロック内のみ focusMeter エージェントが編集する） */
+/* 集中時間メーター（机の上の合計作業時間） */
+.fmeter {
+  --fmeter-accent: #2bb6a3;
+  --fmeter-soft: #e9faf6;
+  width: 178px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 16px 12px;
+  border-radius: var(--r-xxl);
+  background: linear-gradient(180deg, #ffffff 0%, var(--fmeter-soft) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-3);
+  transition: box-shadow 200ms ease;
+}
+.fmeter--running {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fmeter-accent) 22%, transparent), var(--shadow-3);
+}
+
+.fmeter__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: color-mix(in srgb, var(--fmeter-accent) 70%, var(--ink));
+}
+.fmeter__icon {
+  font-size: 15px;
+}
+
+.fmeter__total {
+  font-size: 27px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.3px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.fmeter__status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 16px;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  color: var(--steel);
+  text-align: center;
+}
+.fmeter__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-full);
+  background: var(--fmeter-accent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--fmeter-accent) 35%, transparent);
+  animation: fmeter-pulse 1.8s ease-in-out infinite;
+}
+@keyframes fmeter-pulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--fmeter-accent) 35%, transparent);
+  }
+  50% {
+    opacity: 0.55;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--fmeter-accent) 0%, transparent);
+  }
+}
+/* FOCUS-METER-CSS-END */
+
+/* ---------- 育つ盆栽（.plant） ---------- */
+/* DESK-PLANT-CSS-START（このブロック内のみ plant エージェントが編集する） */
+.plant {
+  width: 164px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 16px 12px;
+  border-radius: var(--r-xxl);
+  background: linear-gradient(180deg, #ffffff 0%, #eaf6ee 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-3);
+}
+.plant__svg {
+  display: block;
+  width: 116px;
+  height: 116px;
+}
+/* 葉のかたまり。幹の根元を支点にそよ風で揺れる */
+.plant__foliage {
+  transform-box: view-box;
+  transform-origin: 60px 92px;
+}
+.plant__foliage--sway {
+  animation: plant-sway 6s ease-in-out infinite;
+}
+@keyframes plant-sway {
+  0%, 100% { transform: rotate(-0.8deg); }
+  50% { transform: rotate(0.8deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plant__foliage--sway {
+    animation: none;
+  }
+}
+.plant__caption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.plant__stage {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--moss-dark);
+}
+.plant__count {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--steel);
+}
+/* DESK-PLANT-CSS-END */

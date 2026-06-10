@@ -2,7 +2,14 @@
 // タスク本体（TaskRepository）とは別系統のレイアウト情報。将来はサーバーへ移行予定。
 const LAYOUT_KEY = 'tsukue.deskLayout.v1';
 
-export type WidgetKind = 'pomodoro' | 'clock' | 'digitalClock' | 'alarm';
+export type WidgetKind =
+  | 'pomodoro'
+  | 'clock'
+  | 'digitalClock'
+  | 'alarm'
+  | 'ambient'
+  | 'focusMeter'
+  | 'plant';
 
 export interface PlacedWidget {
   /** 配置されたウィジェットのインスタンスID。 */
@@ -67,6 +74,9 @@ export const WIDGET_CATALOG: WidgetCatalogItem[] = [
   { kind: 'clock', label: 'アナログ時計', icon: '🕐', desc: '今の時刻をひと目で' },
   { kind: 'digitalClock', label: 'デジタル時計', icon: '⌚', desc: '時刻を数字で表示' },
   { kind: 'alarm', label: 'アラーム', icon: '⏰', desc: '指定時刻にお知らせ' },
+  { kind: 'ambient', label: '環境音プレーヤー', icon: '📻', desc: '雨音やノイズで集中' },
+  { kind: 'focusMeter', label: '集中時間メーター', icon: '⏱️', desc: '机の上の作業時間を合計' },
+  { kind: 'plant', label: '育つ盆栽', icon: '🪴', desc: 'タスクを完了すると育つ' },
 ];
 
 export interface DeskLayout {
@@ -81,7 +91,15 @@ export const DEFAULT_DESK_LAYOUT: DeskLayout = {
 };
 
 function isKind(v: unknown): v is WidgetKind {
-  return v === 'pomodoro' || v === 'clock' || v === 'digitalClock' || v === 'alarm';
+  return (
+    v === 'pomodoro' ||
+    v === 'clock' ||
+    v === 'digitalClock' ||
+    v === 'alarm' ||
+    v === 'ambient' ||
+    v === 'focusMeter' ||
+    v === 'plant'
+  );
 }
 
 function coerceWidget(raw: unknown): PlacedWidget | null {
