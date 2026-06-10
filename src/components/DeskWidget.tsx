@@ -62,7 +62,7 @@ export function DeskWidget({ widget, now, onMove, onRemove, onResize }: Props) {
 
   return (
     <div
-      className={`widget${drag ? ' widget--dragging' : ''}${
+      className={`widget widget--${widget.kind}${drag ? ' widget--dragging' : ''}${
         liveScale != null ? ' widget--resizing' : ''
       }`}
       style={{ left: x, top: y, ...box }}
