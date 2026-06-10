@@ -200,7 +200,7 @@
 .wpick {
   position: fixed;
   z-index: 1200;
-  padding: 10px;
+  padding: 8px; /* 同心: 外16 − 8 = タイル8 */
   background: var(--canvas);
   border: 1px solid var(--hairline-soft);
   border-radius: var(--r-xl);
@@ -228,7 +228,7 @@
   padding: 10px 8px 8px;
   border: 1px solid var(--hairline-soft);
   background: var(--surface);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
   cursor: grab;
   touch-action: none;
   transition: background 130ms ease, border-color 130ms ease, transform 130ms ease;
@@ -339,7 +339,7 @@
   color: var(--slate);
   background: var(--canvas);
   border: 1px dashed var(--hairline-strong);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
   cursor: pointer;
   transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
 }
@@ -502,7 +502,7 @@
 }
 .trashpanel__list {
   margin: 0;
-  padding: 6px;
+  padding: 8px; /* 同心: 外16 − 8 = 行8 */
   list-style: none;
   overflow-y: auto;
 }
@@ -709,21 +709,31 @@
   cursor: nwse-resize;
   touch-action: none;
 }
-/* 角と平行に走る、控えめな弧。要素から少し離して、線はやや太め。 */
+/* 角と平行に走る、控えめな弧。要素から少し離して、線はやや太め。
+   弧の半径は本体と同心にする（本体の角丸 + 隙間4px）。 */
 .widget__resize::after,
 .deskitem__resize::after {
   content: '';
   position: absolute;
   right: 3px;
   bottom: 3px;
-  width: 14px;
-  height: 14px;
   border-right: 2.5px solid currentColor;
   border-bottom: 2.5px solid currentColor;
-  border-bottom-right-radius: 10px;
   color: rgba(5, 0, 56, 0.32);
   opacity: 0;
   transition: opacity 140ms ease;
+}
+.widget__resize::after {
+  /* ウィジェット本体は --r-xxl */
+  width: calc(var(--r-xxl) + 4px);
+  height: calc(var(--r-xxl) + 4px);
+  border-bottom-right-radius: calc(var(--r-xxl) + 4px);
+}
+.deskitem__resize::after {
+  /* 机上アイテム本体は --r-lg */
+  width: calc(var(--r-lg) + 4px);
+  height: calc(var(--r-lg) + 4px);
+  border-bottom-right-radius: calc(var(--r-lg) + 4px);
 }
 .widget:hover .widget__resize::after,
 .deskitem:hover .deskitem__resize::after {
@@ -1081,7 +1091,7 @@
 .addmenu {
   position: fixed;
   z-index: 1200;
-  padding: 10px;
+  padding: 8px; /* 同心: 外16 − 8 = 行8 */
   background: var(--canvas);
   border: 1px solid var(--hairline-soft);
   border-radius: var(--r-xl);
@@ -1110,7 +1120,7 @@
   padding: 10px 10px;
   border: none;
   background: transparent;
-  border-radius: var(--r-lg);
+  border-radius: var(--r-md);
   cursor: pointer;
   text-align: left;
   transition: background 120ms ease;
