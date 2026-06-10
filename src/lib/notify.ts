@@ -3,23 +3,31 @@
  * 通知非対応・不許可・その他の環境では黙って無視する（音と違って必須ではない）。
  */
 
+export type NotifyStatus = NotificationPermission | 'unsupported';
+
 /** ブラウザが通知に対応しているか。 */
 function supported(): boolean {
   return typeof window !== 'undefined' && 'Notification' in window;
+}
+
+export function getNotifyStatus(): NotifyStatus {
+  if (!supported()) return 'unsupported';
+  return Notification.permission;
 }
 
 /**
  * 通知の許可を求める。ユーザー操作（スタート押下など）の中から呼ぶこと。
  * すでに許可・不許可が確定していれば何もしない。
  */
-export function requestNotifyPermission(): void {
-  if (!supported()) return;
+export async function requestNotifyPermission(): Promise<NotifyStatus> {
+  if (!supported()) return 'unsupported';
   try {
     if (Notification.permission === 'default') {
-      void Notification.requestPermission();
+      await Notification.requestPermission();
     }
+    return Notification.permission;
   } catch {
-    /* 取得できない環境は無視 */
+    return getNotifyStatus();
   }
 }
 

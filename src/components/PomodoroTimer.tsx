@@ -11,6 +11,13 @@ function mmss(ms: number): string {
 const RING_R = 52;
 const RING_C = 2 * Math.PI * RING_R;
 
+function notifyLabel(status: ReturnType<typeof usePomodoro>['notifyStatus']): string {
+  if (status === 'granted') return '通知オン';
+  if (status === 'denied') return '通知ブロック';
+  if (status === 'unsupported') return '通知非対応';
+  return '通知を許可';
+}
+
 /** オシャレでかわいいポモドーロタイマー。配置や移動は DeskWidget 側が受け持つ。 */
 export function PomodoroTimer() {
   const pomo = usePomodoro();
@@ -79,6 +86,10 @@ export function PomodoroTimer() {
           ))
         )}
         {pomo.completed > 8 && <span className="pomo__tomatoes-more">+{pomo.completed - 8}</span>}
+      </div>
+
+      <div className={`pomo__notify pomo__notify--${pomo.notifyStatus}`}>
+        {notifyLabel(pomo.notifyStatus)}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { playChime } from '../lib/sound';
-import { requestNotifyPermission, showNotification } from '../lib/notify';
+import { getNotifyStatus, requestNotifyPermission, showNotification } from '../lib/notify';
+import type { NotifyStatus } from '../lib/notify';
 
 export type PomoPhase = 'focus' | 'break';
 
@@ -17,7 +18,7 @@ export interface Pomodoro {
   totalMs: number;
   /** 完了した集中セッション数（🍅 の数）。 */
   completed: number;
-  /** 直近にフェーズが切り替わったか（チャイム演出のトリガに使う）。 */
+  notifyStatus: NotifyStatus;
   toggle: () => void;
   reset: () => void;
   skip: () => void;
@@ -34,8 +35,19 @@ export function usePomodoro(): Pomodoro {
   const [running, setRunning] = useState(false);
   const [remainingMs, setRemainingMs] = useState(POMO_FOCUS_MS);
   const [completed, setCompleted] = useState(0);
+  const [notifyStatus, setNotifyStatus] = useState<NotifyStatus>(() => getNotifyStatus());
   const remainingRef = useRef(remainingMs);
   remainingRef.current = remainingMs;
+
+  useEffect(() => {
+    const refresh = () => setNotifyStatus(getNotifyStatus());
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, []);
 
   useEffect(() => {
     if (!running) return;
@@ -62,11 +74,12 @@ export function usePomodoro(): Pomodoro {
     return () => window.clearInterval(id);
   }, [running, phase]);
 
-  const toggle = useCallback(() => {
-    // スタート押下（ユーザー操作）のタイミングで通知許可を求めておく。
-    requestNotifyPermission();
+  const toggle = useCallback(async () => {
+    if (!running) {
+      setNotifyStatus(await requestNotifyPermission());
+    }
     setRunning((r) => !r);
-  }, []);
+  }, [running]);
 
   const reset = useCallback(() => {
     setRunning(false);
@@ -88,6 +101,7 @@ export function usePomodoro(): Pomodoro {
     remainingMs,
     totalMs: phaseTotal(phase),
     completed,
+    notifyStatus,
     toggle,
     reset,
     skip,

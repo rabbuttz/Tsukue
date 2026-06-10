@@ -1272,6 +1272,26 @@
   color: var(--steel);
   margin-left: 2px;
 }
+.pomo__notify {
+  min-height: 18px;
+  padding: 2px 9px;
+  border-radius: var(--r-full);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--steel);
+  background: rgba(255, 255, 255, 0.62);
+}
+.pomo__notify--granted {
+  color: #18836f;
+  background: #e7f8f4;
+}
+.pomo__notify--denied {
+  color: #b03848;
+  background: #ffe9ee;
+}
+.pomo__notify--unsupported {
+  color: var(--stone);
+}
 
 /* ---------- アナログ時計ウィジェット ---------- */
 .clock {
