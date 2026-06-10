@@ -1,0 +1,1931 @@
+/* ============================================================
+   Tsukue — レイアウト & コンポーネント
+   DESIGN-miro.md 準拠（パステル付箋 / ピル / 控えめなブランドイエロー）
+   ============================================================ */
+
+.app {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #f1f2f6 0%, #e7e9ef 55%, #e1e3ea 100%);
+}
+
+/* ---------- ビュー切替（机 ⇄ カレンダー） ---------- */
+.stage {
+  position: relative;
+  height: 100%;
+}
+.view {
+  position: absolute;
+  inset: 0;
+}
+.view--show {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 2;
+}
+/* 非アクティブ／遷移中：非表示だがレイアウトは保持（位置計測のため） */
+.view--hide {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ---------- 飛んでいく付箋クローン ---------- */
+.fly {
+  position: fixed;
+  z-index: 100;
+  overflow: hidden;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink);
+  box-shadow: var(--shadow-3);
+  transition:
+    left 560ms cubic-bezier(0.4, 0, 0.2, 1),
+    top 560ms cubic-bezier(0.4, 0, 0.2, 1),
+    width 560ms cubic-bezier(0.4, 0, 0.2, 1),
+    height 560ms cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: left, top, width, height;
+}
+.fly__text {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.fly--yellow { background: var(--sticky-yellow); }
+.fly--coral { background: var(--sticky-coral); }
+.fly--teal { background: var(--sticky-teal); }
+.fly--rose { background: var(--sticky-rose); }
+.fly--orange { background: var(--sticky-orange); }
+
+/* ---------- 壁のカレンダー（上部からはみ出す） ---------- */
+.wall-cal {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -58%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 280px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  transition: transform 200ms ease;
+}
+.wall-cal:hover {
+  transform: translate(-50%, -42%);
+}
+.wall-cal__binding {
+  width: 240px;
+  height: 14px;
+  border-radius: var(--r-full);
+  background: var(--brand-yellow);
+  box-shadow: var(--shadow-2);
+}
+.wall-cal__sheet {
+  width: 280px;
+  padding: 30px 0 26px;
+  margin-top: -6px;
+  border-radius: 0 0 var(--r-xl) var(--r-xl);
+  background: var(--canvas);
+  box-shadow: var(--shadow-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.wall-cal__month {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+}
+.wall-cal__clock {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  line-height: 1.1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.wall-cal__date {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--steel);
+}
+.wall-cal__hint {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--steel);
+}
+
+/* ---------- 机ビュー ---------- */
+.desk-view {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  padding-top: 54px; /* 壁カレンダーの下に内容を逃がす */
+}
+.toolbar__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.brand {
+  position: relative;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+}
+.brand__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 2px;
+  border-radius: var(--r-full);
+  background: var(--brand-yellow);
+}
+.proto-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--yellow-dark);
+  background: var(--surface-yellow);
+  border-radius: var(--r-full);
+  padding: 4px 10px;
+}
+
+.toolbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.widget-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--brand-yellow);
+  border: none;
+  border-radius: var(--r-full);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: background 150ms ease, box-shadow 150ms ease;
+}
+.widget-add:hover {
+  background: var(--brand-yellow-deep);
+  box-shadow: 0 6px 16px -6px var(--brand-yellow-deep);
+}
+
+/* ---------- ウィジェット選択ポップオーバー ---------- */
+.wpick {
+  position: fixed;
+  z-index: 1200;
+  padding: 10px;
+  background: var(--canvas);
+  border: 1px solid var(--hairline-soft);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-4);
+  animation: dpick-in 140ms ease;
+  transform-origin: top right;
+}
+.wpick__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--slate);
+  padding: 4px 8px 8px;
+}
+.wpick__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+/* 実ウィジェットのプレビュー1枚（＝机へドラッグする掴み口）。 */
+.wpick__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 8px 8px;
+  border: 1px solid var(--hairline-soft);
+  background: var(--surface);
+  border-radius: var(--r-lg);
+  cursor: grab;
+  touch-action: none;
+  transition: background 130ms ease, border-color 130ms ease, transform 130ms ease;
+}
+.wpick__tile:hover {
+  background: var(--surface-yellow);
+  border-color: var(--hairline-strong);
+  transform: translateY(-1px);
+}
+.wpick__tile:active {
+  cursor: grabbing;
+}
+/* プレビュー枠：実ウィジェットを縮小して中央に収める。 */
+.wpick__stage {
+  width: 128px;
+  height: 116px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none; /* 中身は飾り。タイルがドラッグを受ける。 */
+}
+.wpick__scale {
+  display: inline-flex;
+  transform-origin: center center;
+}
+.wpick__nat {
+  display: inline-flex;
+}
+.wpick__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.wpick__count {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--steel);
+  background: var(--canvas);
+  border-radius: var(--r-full);
+  padding: 0 7px;
+}
+.wpick__hint {
+  margin: 8px 8px 2px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--stone);
+}
+
+/* ---------- 作業エリア（トレイ + 机） ---------- */
+.work-area {
+  flex: 1;
+  display: flex;
+  gap: 20px;
+  padding: 0 24px 24px;
+  min-height: 0;
+}
+
+/* ---------- トレイ（To Do） ---------- */
+.tray {
+  flex: 0 0 296px;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #e9ebf1 0%, #e3e5ec 100%);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-xl);
+  padding: 14px;
+  box-shadow: inset 0 2px 6px rgba(5, 0, 56, 0.06);
+  transition: outline-color 150ms ease, background 150ms ease;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  min-height: 0;
+}
+.tray__label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 6px 12px;
+}
+.tray__title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--slate);
+}
+.tray__count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--steel);
+  background: var(--canvas);
+  border-radius: var(--r-full);
+  padding: 1px 8px;
+}
+.tray__add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--slate);
+  background: var(--canvas);
+  border: 1px dashed var(--hairline-strong);
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.tray__add:hover {
+  background: #fff;
+  border-color: var(--steel);
+  color: var(--ink);
+}
+.tray__notes {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 4px;
+}
+.tray__stack {
+  position: relative;
+  width: 100%;
+}
+.tray__slot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  will-change: transform;
+}
+.tray__empty {
+  font-size: 13px;
+  color: var(--stone);
+  margin: 8px 6px;
+  line-height: 1.6;
+}
+
+/* ---------- 机の上（In Progress / 自由配置） ---------- */
+.desk-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+.desk {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: var(--r-xl);
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.012) 0 2px, transparent 2px 64px),
+    linear-gradient(180deg, #fbfbfd 0%, #f4f5f8 100%);
+  border: 1px solid var(--hairline-soft);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), var(--shadow-1);
+  transition: box-shadow 150ms ease;
+}
+.zone--hover {
+  outline-color: var(--brand-blue);
+}
+.desk.zone--hover {
+  box-shadow: inset 0 0 0 2px var(--brand-blue), var(--shadow-1);
+}
+.desk__hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  color: var(--stone);
+  text-align: center;
+  pointer-events: none;
+}
+
+/* ---------- ゴミ箱 ---------- */
+.trash {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: min(72%, 560px);
+  height: 84px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: var(--r-xl);
+  background: rgba(255, 255, 255, 0.92);
+  border: 2px dashed var(--hairline-strong);
+  color: var(--steel);
+  cursor: pointer;
+  transition: transform 150ms ease, background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.trash__label {
+  font-size: 15px;
+  font-weight: 600;
+}
+.trash--open {
+  border-style: solid;
+  border-color: var(--hairline-strong);
+  background: var(--canvas);
+}
+.trash--hover {
+  background: var(--success-accent);
+  border-color: var(--success-accent);
+  border-style: solid;
+  color: var(--on-primary);
+  transform: translateX(-50%) scale(1.03);
+}
+.trash__count {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-primary);
+  background: var(--primary);
+  border-radius: var(--r-full);
+}
+
+/* ---------- ゴミ箱パネル（完了タスク一覧） ---------- */
+.trashpanel {
+  position: fixed;
+  z-index: 1200;
+  width: 300px;
+  max-height: 360px;
+  display: flex;
+  flex-direction: column;
+  background: var(--canvas);
+  border: 1px solid var(--hairline-soft);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-4);
+  overflow: hidden;
+  animation: dpick-in 140ms ease;
+}
+.trashpanel__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--hairline-soft);
+}
+.trashpanel__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.trashpanel__count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--steel);
+  background: var(--surface);
+  border-radius: var(--r-full);
+  padding: 1px 8px;
+}
+.trashpanel__list {
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  overflow-y: auto;
+}
+.trashitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--r-md);
+}
+.trashitem:hover {
+  background: var(--surface);
+}
+.trashitem__chip {
+  flex: 0 0 auto;
+  width: 10px;
+  height: 28px;
+  border-radius: var(--r-xs);
+}
+.trashitem__chip--yellow { background: var(--sticky-yellow); }
+.trashitem__chip--coral { background: var(--sticky-coral); }
+.trashitem__chip--teal { background: var(--sticky-teal); }
+.trashitem__chip--rose { background: var(--sticky-rose); }
+.trashitem__chip--orange { background: var(--sticky-orange); }
+.trashitem__body {
+  flex: 1;
+  min-width: 0;
+}
+.trashitem__content {
+  font-size: 13px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trashitem__meta {
+  font-size: 11px;
+  color: var(--steel);
+  margin-top: 1px;
+}
+.trashitem__actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.trashitem__restore {
+  border: 1px solid var(--hairline-strong);
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  transition: background 150ms ease;
+}
+.trashitem__restore:hover {
+  background: var(--surface);
+}
+.trashitem__delete {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--stone);
+  font-size: 13px;
+  border-radius: var(--r-full);
+  transition: background 150ms ease, color 150ms ease;
+}
+.trashitem__delete:hover {
+  background: var(--brand-red);
+  color: var(--coral-dark);
+}
+
+/* ---------- 白紙パッド（机の右上に常駐） ---------- */
+.pad-anchor {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 5;
+}
+/* 後ろに重なった紙で「束（パッド）」らしさを出す */
+.pad-sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 232px;
+  height: 168px;
+  border-radius: var(--r-sm);
+  background: var(--canvas);
+  box-shadow: var(--shadow-1);
+}
+.pad-sheet--1 {
+  transform: rotate(3deg) translate(4px, 3px);
+}
+.pad-sheet--2 {
+  transform: rotate(-2.5deg) translate(-4px, 2px);
+}
+
+/* ---------- 机上ウィジェットの枠（位置・移動・取り外し） ---------- */
+.widget {
+  position: absolute;
+  z-index: 6;
+  /* 中身にぴったり沿わせる（点線枠や外すボタンを正しく当てるため）。 */
+  display: inline-block;
+  /* 本体のどこを掴んでも動かせる合図（ボタン等は各自 pointer カーソルで上書き）。 */
+  cursor: grab;
+  touch-action: none;
+}
+.widget--dragging {
+  cursor: grabbing;
+  z-index: 40;
+}
+/* 既定：離した時に効く補完（行き過ぎて戻る、ふわっとした収まり）。 */
+.widget__body {
+  transition:
+    transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    filter 240ms ease;
+}
+.widget--dragging .widget__body {
+  transform: scale(1.04) translateY(-3px) rotate(-1.5deg);
+  filter: drop-shadow(0 18px 36px rgba(5, 0, 56, 0.24));
+  /* 掴む瞬間はふわっと素早く持ち上がる。 */
+  transition:
+    transform 190ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 190ms ease;
+}
+.widget__remove,
+.deskitem__remove {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  z-index: 6;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  color: #fff;
+  background: #ff5a6e;
+  border: 2px solid var(--canvas);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  box-shadow: var(--shadow-2);
+  opacity: 0;
+  transform: scale(0.7);
+  transition: transform 120ms ease, background 150ms ease, opacity 120ms ease;
+}
+.widget:hover .widget__remove,
+.deskitem:hover .deskitem__remove,
+.widget--dragging .widget__remove,
+.deskitem--dragging .deskitem__remove {
+  opacity: 1;
+  transform: scale(1);
+}
+.widget__remove:hover,
+.deskitem__remove:hover {
+  background: #ff3b54;
+  transform: scale(1.1);
+}
+
+/* 中身の自然サイズを保つラッパ。transform: scale で見た目だけ拡縮する。 */
+.widget__scaler {
+  display: block;
+}
+.widget--resizing,
+.deskitem--resizing {
+  user-select: none;
+}
+
+/* ---------- 右下リサイズハンドル（ウィジェット／アイテム 共通） ---------- */
+/* 当たり判定（掴める範囲）は透明で広めに取り、見た目は角に沿う控えめな弧線だけにする。 */
+.widget__resize,
+.deskitem__resize {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  z-index: 4;
+  width: 26px;
+  height: 26px;
+  cursor: nwse-resize;
+  touch-action: none;
+}
+/* 角と平行に走る、控えめな弧。要素から少し離して、線はやや太め。 */
+.widget__resize::after,
+.deskitem__resize::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 14px;
+  height: 14px;
+  border-right: 2.5px solid currentColor;
+  border-bottom: 2.5px solid currentColor;
+  border-bottom-right-radius: 10px;
+  color: rgba(5, 0, 56, 0.32);
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+.widget:hover .widget__resize::after,
+.deskitem:hover .deskitem__resize::after {
+  opacity: 1;
+}
+.widget--resizing .widget__resize::after,
+.deskitem--resizing .deskitem__resize::after {
+  opacity: 1;
+  color: rgba(5, 0, 56, 0.5);
+}
+
+/* ---------- 机に貼ったコンテンツ（テキスト／画像／動画／URL） ---------- */
+.deskitem {
+  position: absolute;
+  z-index: 5;
+  border-radius: var(--r-lg);
+  transition: filter 240ms ease;
+}
+/* 既定：離した時に効く補完（行き過ぎて戻る、ふわっとした収まり）。 */
+.deskitem__text,
+.deskitem__img,
+.deskitem__video,
+.ogcard {
+  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.deskitem--dragging {
+  cursor: grabbing;
+  z-index: 40;
+  filter: drop-shadow(0 18px 36px rgba(5, 0, 56, 0.24));
+}
+.deskitem--dragging > *:not(.deskitem__remove):not(.deskitem__resize) {
+  transform: scale(1.03) translateY(-3px) rotate(-1deg);
+  /* 掴む瞬間はふわっと素早く持ち上がる。 */
+  transition: transform 190ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* 画像・動画は本体のどこを掴んでも動かせるよう、掴める合図を出す。 */
+.deskitem--image,
+.deskitem--video {
+  cursor: grab;
+  touch-action: none;
+}
+.deskitem--image.deskitem--dragging,
+.deskitem--video.deskitem--dragging {
+  cursor: grabbing;
+}
+
+/* テキスト */
+.deskitem__text {
+  width: 100%;
+  height: 100%;
+  resize: none;
+  border: none;
+  outline: none;
+  padding: 12px 14px;
+  border-radius: inherit;
+  background: #fffdf3;
+  box-shadow: var(--shadow-2);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink);
+}
+.deskitem__text::placeholder {
+  color: var(--ink-soft, #9aa0ad);
+}
+
+/* 画像 */
+.deskitem__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  box-shadow: var(--shadow-2);
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* 動画 */
+.deskitem__video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: inherit;
+  background: #000;
+  box-shadow: var(--shadow-2);
+}
+
+/* URL カード（OGPプレビュー） */
+.ogcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--canvas);
+  border: 1px solid var(--hairline-soft);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+}
+/* 入力中（未確定）だけ余白とフォーム配置にする。 */
+.ogcard--edit {
+  gap: 8px;
+  padding: 12px 14px;
+  justify-content: center;
+}
+.deskitem__urlinput {
+  width: 100%;
+  border: 1px solid var(--hairline-soft);
+  border-radius: var(--r-md);
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: #fff;
+}
+.deskitem__urlinput:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+}
+.deskitem__urlhint {
+  font-size: 12px;
+  color: var(--ink-soft, #9aa0ad);
+}
+
+/* 埋め込み（YouTube / Vimeo / 動画URL） */
+.deskitem--embed {
+  cursor: default;
+}
+.embedbox {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #000;
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
+}
+/* 入力中（未確定）はカード風の余白とフォーム配置にする。 */
+.embedbox--edit {
+  gap: 8px;
+  padding: 12px 14px;
+  justify-content: center;
+  background: var(--canvas);
+  border: 1px solid var(--hairline-soft);
+}
+/* 上部の掴みバー（ここをドラッグして移動。iframe 上は掴めないため必須）。 */
+.embedbox__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 0 0 auto;
+  height: 22px;
+  padding: 0 8px;
+  background: rgba(5, 0, 56, 0.6);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  cursor: grab;
+  touch-action: none;
+}
+.deskitem--dragging .embedbox__bar {
+  cursor: grabbing;
+}
+.embedbox__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.95;
+}
+.embedbox__open {
+  color: #fff;
+  text-decoration: none;
+  opacity: 0.8;
+  padding: 0 4px;
+}
+.embedbox__open:hover {
+  opacity: 1;
+}
+.embedbox__frame,
+.embedbox__video {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  display: block;
+  border: 0;
+  background: #000;
+}
+.embedbox__video {
+  object-fit: contain;
+}
+.embedbox__fallback {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  text-align: center;
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 13px;
+  text-decoration: none;
+}
+.embedbox__fallback-open {
+  font-size: 12px;
+  color: var(--brand-blue);
+}
+
+/* 確定後のプレビュー本体（クリックで開く） */
+.ogcard__main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  text-decoration: none;
+  color: inherit;
+  /* リンク本体を掴んでも、ブラウザ標準の「リンクのドラッグ」やテキスト選択を起こさず、
+     こちらの移動処理（閾値ドラッグ）だけが効くようにする。 */
+  -webkit-user-drag: none;
+  user-select: none;
+  cursor: grab;
+}
+.deskitem--dragging .ogcard__main {
+  cursor: grabbing;
+}
+.ogcard--collapsed .ogcard__main {
+  justify-content: center;
+}
+.ogcard__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  background: #f1f2f6;
+  overflow: hidden;
+}
+.ogcard__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* og:image が無いときの favicon は、引き伸ばさず中央に小さく置く。 */
+.ogcard__thumb img.ogcard__favicon {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+.ogcard__thumb-fallback {
+  font-size: 24px;
+  opacity: 0.7;
+}
+.ogcard__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 12px 11px;
+}
+.ogcard__title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ink);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ogcard__desc {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--ink-soft, #9aa0ad);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ogcard__host {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-blue);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ogcard__main:hover .ogcard__host {
+  text-decoration: underline;
+}
+/* 表示/非表示トグル（ホバーで現れる控えめなチップ） */
+.ogcard__toggle {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  z-index: 2;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--slate, #5b6472);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--hairline-soft);
+  border-radius: var(--r-full);
+  padding: 3px 10px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease, background 120ms ease;
+}
+.deskitem--url:hover .ogcard__toggle {
+  opacity: 1;
+}
+.ogcard__toggle:hover {
+  background: #fff;
+}
+
+/* ---------- 左下「＋」FAB と追加メニュー ---------- */
+.add-fab {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  z-index: 50;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  line-height: 1;
+  color: #fff;
+  background: var(--brand-blue);
+  border: none;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  box-shadow: var(--shadow-3);
+  transition: transform 140ms ease, background 150ms ease, box-shadow 150ms ease;
+}
+.add-fab:hover {
+  background: #3450e6;
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: var(--shadow-4);
+}
+.add-fab--on {
+  background: #3450e6;
+  transform: rotate(45deg);
+}
+
+.addmenu {
+  position: fixed;
+  z-index: 1200;
+  padding: 10px;
+  background: var(--canvas);
+  border: 1px solid var(--hairline-soft);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-4);
+  animation: dpick-in 140ms ease;
+}
+.addmenu__title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft, #9aa0ad);
+  padding: 4px 8px 8px;
+}
+.addmenu__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.addmenu__item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--r-lg);
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms ease;
+}
+.addmenu__item:hover {
+  background: var(--brand-blue-soft, #eef1ff);
+}
+.addmenu__icon {
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+}
+.addmenu__body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.addmenu__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.addmenu__desc {
+  font-size: 12px;
+  color: var(--ink-soft, #9aa0ad);
+}
+.addmenu__add {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--brand-blue);
+}
+
+/* ---------- ポモドーロタイマー ---------- */
+.pomo {
+  --pomo-accent: #ff6f61;
+  --pomo-soft: #fff1ee;
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 16px 14px;
+  border-radius: var(--r-xxl);
+  background: linear-gradient(180deg, #ffffff 0%, var(--pomo-soft) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-3);
+  transition: box-shadow 200ms ease, transform 200ms ease;
+}
+.pomo--break {
+  --pomo-accent: #2bb6a3;
+  --pomo-soft: #e9faf6;
+}
+.pomo--running {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pomo-accent) 22%, transparent), var(--shadow-3);
+}
+
+.pomo__phase {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: color-mix(in srgb, var(--pomo-accent) 70%, var(--ink));
+}
+.pomo__face {
+  font-size: 16px;
+}
+.pomo--running .pomo__face {
+  display: inline-block;
+  animation: pomo-bob 1.6s ease-in-out infinite;
+}
+@keyframes pomo-bob {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-2px) rotate(4deg); }
+}
+
+.pomo__dial {
+  position: relative;
+  width: 124px;
+  height: 124px;
+}
+.pomo__ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.pomo__track {
+  fill: none;
+  stroke: rgba(5, 0, 56, 0.07);
+  stroke-width: 9;
+}
+.pomo__progress {
+  fill: none;
+  stroke: var(--pomo-accent);
+  stroke-width: 9;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 320ms linear, stroke 250ms ease;
+  filter: drop-shadow(0 1px 3px color-mix(in srgb, var(--pomo-accent) 45%, transparent));
+}
+.pomo__time {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.pomo__controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pomo__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: transform 120ms ease, background 150ms ease, color 150ms ease;
+}
+.pomo__btn:active {
+  transform: scale(0.92);
+}
+.pomo__btn--main {
+  width: 44px;
+  height: 44px;
+  font-size: 15px;
+  color: #fff;
+  background: var(--pomo-accent);
+  box-shadow: 0 6px 14px -4px color-mix(in srgb, var(--pomo-accent) 60%, transparent);
+}
+.pomo__btn--main:hover {
+  filter: brightness(1.05);
+}
+.pomo__btn--ghost {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  color: var(--steel);
+  background: rgba(255, 255, 255, 0.7);
+}
+.pomo__btn--ghost:hover {
+  background: #fff;
+  color: var(--ink);
+}
+
+.pomo__tomatoes {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  min-height: 18px;
+  font-size: 13px;
+}
+.pomo__tomato {
+  animation: pomo-pop 280ms ease both;
+}
+@keyframes pomo-pop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+.pomo__tomatoes-empty {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--stone);
+}
+.pomo__tomatoes-more {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--steel);
+  margin-left: 2px;
+}
+
+/* ---------- アナログ時計ウィジェット ---------- */
+.clock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 168px;
+  padding: 16px 16px 14px;
+  border-radius: var(--r-xxl);
+  background: linear-gradient(180deg, #ffffff 0%, #f4f6fb 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-3);
+}
+.clock__face {
+  width: 132px;
+  height: 132px;
+}
+.clock__bg {
+  fill: var(--canvas);
+}
+.clock__rim {
+  fill: none;
+  stroke: var(--hairline);
+  stroke-width: 3;
+}
+.clock__tick {
+  stroke: var(--stone);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+}
+.clock__tick--major {
+  stroke: var(--slate);
+  stroke-width: 3;
+}
+.clock__hand {
+  stroke-linecap: round;
+}
+.clock__hand--hour {
+  stroke: var(--ink);
+  stroke-width: 5;
+}
+.clock__hand--min {
+  stroke: var(--ink);
+  stroke-width: 3.5;
+}
+.clock__hand--sec {
+  stroke: var(--brand-blue);
+  stroke-width: 1.6;
+}
+.clock__pin {
+  fill: var(--brand-blue);
+}
+.clock__date {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--slate);
+}
+
+/* ---------- デジタル時計ウィジェット ---------- */
+.digiclock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 168px;
+  padding: 20px 16px 16px;
+  border-radius: var(--r-xxl);
+  background: linear-gradient(180deg, #1c2236 0%, #0e1322 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow-3);
+}
+.digiclock__time {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: #eaf0ff;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+.digiclock__hm {
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 1px;
+  text-shadow: 0 0 12px rgba(120, 170, 255, 0.4);
+}
+.digiclock__sec {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  color: #8ea2c8;
+}
+.digiclock__date {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: #9fb0d4;
+}
+
+/* ---------- アラームウィジェット ---------- */
+.alarm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 168px;
+  padding: 16px 16px 14px;
+  border-radius: var(--r-xxl);
+  background: linear-gradient(180deg, #ffffff 0%, #fff6e8 100%);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-3);
+}
+.alarm--armed {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-yellow-deep) 28%, transparent), var(--shadow-3);
+}
+.alarm--ringing {
+  background: linear-gradient(180deg, #ffffff 0%, #ffe2e2 100%);
+  animation: alarm-shake 0.5s ease-in-out infinite;
+}
+@keyframes alarm-shake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-3px) rotate(-1.5deg); }
+  75% { transform: translateX(3px) rotate(1.5deg); }
+}
+.alarm__phase {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--yellow-dark);
+}
+.alarm--ringing .alarm__phase {
+  color: #c0392b;
+}
+.alarm__face {
+  font-size: 16px;
+}
+.alarm--ringing .alarm__face {
+  display: inline-block;
+  animation: alarm-bell 0.4s ease-in-out infinite;
+}
+@keyframes alarm-bell {
+  0%, 100% { transform: rotate(-12deg); }
+  50% { transform: rotate(12deg); }
+}
+.alarm__time {
+  font-family: inherit;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-md);
+  padding: 4px 10px;
+  text-align: center;
+}
+.alarm__time:disabled {
+  opacity: 0.6;
+}
+.alarm__switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.alarm__track {
+  position: relative;
+  width: 42px;
+  height: 24px;
+  border-radius: var(--r-full);
+  background: var(--hairline-strong);
+  transition: background 160ms ease;
+}
+.alarm__knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-full);
+  background: #fff;
+  box-shadow: var(--shadow-1);
+  transition: transform 160ms ease;
+}
+.alarm__switch--on .alarm__track {
+  background: var(--success-accent);
+}
+.alarm__switch--on .alarm__knob {
+  transform: translateX(18px);
+}
+.alarm__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--steel);
+}
+.alarm__switch--on .alarm__label {
+  color: var(--success-accent);
+}
+.alarm__stop {
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: #ff3b54;
+  border-radius: var(--r-full);
+  padding: 8px 18px;
+  box-shadow: 0 6px 14px -4px rgba(255, 59, 84, 0.6);
+  transition: filter 150ms ease;
+}
+.alarm__stop:hover {
+  filter: brightness(1.05);
+}
+.alarm__status {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--steel);
+}
+.alarm--ringing .alarm__status {
+  color: #c0392b;
+  font-weight: 700;
+}
+
+/* ---------- 付箋 ---------- */
+.sticky {
+  width: 232px;
+  min-height: 168px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px 16px;
+  border-radius: var(--r-sm);
+  box-shadow: var(--shadow-sticky);
+  transform: rotate(var(--tilt, 0deg));
+  transition: box-shadow 150ms ease, transform 150ms ease;
+  touch-action: none;
+  cursor: grab;
+}
+.sticky:hover {
+  box-shadow: var(--shadow-sticky-lift);
+}
+.sticky--ghost {
+  opacity: 0.25;
+}
+/* 配置変更モード：本文・日付をロックし、付箋全体をつかんで動かせるようにする。 */
+.sticky--yellow {
+  background: var(--sticky-yellow);
+  border-top: 3px solid var(--sticky-yellow-edge);
+}
+.sticky--coral {
+  background: var(--sticky-coral);
+  border-top: 3px solid var(--sticky-coral-edge);
+}
+.sticky--teal {
+  background: var(--sticky-teal);
+  border-top: 3px solid var(--sticky-teal-edge);
+}
+.sticky--rose {
+  background: var(--sticky-rose);
+  border-top: 3px solid var(--sticky-rose-edge);
+}
+.sticky--orange {
+  background: var(--sticky-orange);
+  border-top: 3px solid var(--sticky-orange-edge);
+}
+
+.sticky__header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.sticky__date {
+  border: none;
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--ink-deep);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--r-full);
+}
+.sticky__date:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+.sticky__date-input {
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+  padding: 2px 4px;
+  font-family: inherit;
+}
+.sticky__content {
+  flex: 1;
+  resize: none;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink);
+  outline: none;
+}
+.sticky__content::placeholder {
+  color: rgba(28, 28, 30, 0.35);
+}
+.sticky__elapsed {
+  margin-top: 6px;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-deep);
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: var(--r-full);
+  padding: 2px 8px;
+}
+.sticky__elapsed--paused {
+  color: var(--steel);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* ---------- 日付選択ポップオーバー ---------- */
+.dpick {
+  position: fixed;
+  z-index: 1200;
+  padding: 14px;
+  background: var(--canvas);
+  border: 1px solid var(--hairline-soft);
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-4);
+  animation: dpick-in 140ms ease;
+  transform-origin: top left;
+}
+@keyframes dpick-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.dpick__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.dpick__title {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  color: var(--ink);
+}
+.dpick__nav {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-full);
+  transition: background 150ms ease;
+}
+.dpick__nav:hover {
+  background: var(--surface);
+}
+.dpick__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+.dpick__wd {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--steel);
+  padding: 4px 0;
+}
+.dpick__wd--sun { color: #c0392b; }
+.dpick__wd--sat { color: var(--brand-blue); }
+
+.dpick__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.dpick__day {
+  height: 30px;
+  border: none;
+  background: transparent;
+  border-radius: var(--r-full);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  transition: background 120ms ease, color 120ms ease;
+}
+.dpick__day:hover {
+  background: var(--surface-yellow);
+}
+.dpick__day--sun { color: #c0392b; }
+.dpick__day--sat { color: var(--brand-blue); }
+.dpick__day--dim {
+  color: var(--muted);
+}
+.dpick__day--today {
+  box-shadow: inset 0 0 0 1px var(--brand-yellow);
+}
+.dpick__day--selected,
+.dpick__day--selected:hover {
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.dpick__foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--hairline-soft);
+}
+.dpick__today {
+  border: none;
+  background: var(--brand-yellow);
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: var(--r-full);
+  transition: background 150ms ease;
+}
+.dpick__today:hover {
+  background: var(--brand-yellow-deep);
+}
+
+/* ---------- ドラッグ中オーバーレイ ---------- */
+.drag-layer {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+}
+.drag-layer .sticky {
+  cursor: grabbing;
+  transform: rotate(-3deg) scale(1.04);
+  box-shadow: var(--shadow-4);
+  opacity: 1;
+}
+
+/* ピッカーから机へドラッグ中のウィジェットのクローン（ポインタ中央に追従）。 */
+.widget-drag-clone {
+  position: fixed;
+  z-index: 1300;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.9) rotate(-1.5deg);
+  filter: drop-shadow(0 18px 36px rgba(5, 0, 56, 0.26));
+  opacity: 0.96;
+}
+
+/* ============================================================
+   カレンダー表示
+   ============================================================ */
+.calview {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 24px 24px 64px; /* 下端の「机に戻る」タブ分を確保 */
+  overflow: hidden;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #f6f7fa 0%, #eceef3 100%);
+  animation: view-in 220ms ease;
+}
+@keyframes view-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.calview__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.calview__nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.calview__navbtn {
+  padding: 6px 16px;
+  font-size: 18px;
+  line-height: 1;
+}
+.calview__title {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+.calview__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.calview__wd {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--steel);
+  padding: 4px 0;
+}
+.calview__wd--sun { color: #c0392b; }
+.calview__wd--sat { color: var(--brand-blue); }
+
+.calview__grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 8px;
+  min-height: 0;
+}
+.calcell {
+  display: flex;
+  flex-direction: column;
+  background: var(--canvas);
+  border: 1px solid var(--hairline-soft);
+  border-radius: var(--r-lg);
+  padding: 6px;
+  overflow: hidden;
+}
+.calcell--dim {
+  background: var(--surface-soft);
+  color: var(--muted);
+}
+.calcell--dim .calcell__num {
+  color: var(--muted);
+}
+.calcell--today {
+  border-color: var(--brand-yellow);
+  box-shadow: inset 0 0 0 1px var(--brand-yellow);
+}
+.calcell__num {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--slate);
+  margin-bottom: 4px;
+}
+.calcell__notes {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: auto;
+}
+
+.mini {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 6px;
+  border-radius: var(--r-xs);
+  font-size: 11px;
+  line-height: 1.3;
+  color: var(--ink);
+  animation: mini-in 280ms ease both;
+}
+@keyframes mini-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.mini--yellow { background: var(--sticky-yellow); }
+.mini--coral { background: var(--sticky-coral); }
+.mini--teal { background: var(--sticky-teal); }
+.mini--rose { background: var(--sticky-rose); }
+.mini--orange { background: var(--sticky-orange); }
+.mini--done { opacity: 0.6; }
+.mini--done .mini__text { text-decoration: line-through; }
+
+.mini__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mini__dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: var(--r-full);
+}
+.mini__dot--todo { background: var(--stone); }
+.mini__dot--inProgress { background: var(--brand-blue); }
+.mini__dot--done { background: var(--success-accent); }
+
+.calview__legend {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--slate);
+}
+
+/* ---------- 「机に戻る」横長タブ（下端からはみ出す） ---------- */
+.back-to-desk {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 38%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 320px;
+  padding: 14px 0 30px; /* 下の余白部分だけが画面外へはみ出す */
+  border: none;
+  border-radius: var(--r-xl) var(--r-xl) 0 0;
+  background: var(--canvas);
+  box-shadow: 0 -12px 32px -4px rgba(5, 0, 56, 0.12);
+  transition: transform 200ms ease;
+}
+.back-to-desk:hover {
+  transform: translate(-50%, 10%);
+}
+.back-to-desk__label {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink); /* 常に見える上側に配置 */
+}
+.back-to-desk__grip {
+  width: 64px;
+  height: 6px;
+  border-radius: var(--r-full);
+  background: var(--hairline-strong);
+}
+
+/* ---------- レスポンシブ（机メタファのためデスクトップ前提・狭幅は縦積み） ---------- */
+@media (max-width: 720px) {
+  .work-area {
+    flex-direction: column;
+  }
+  .tray {
+    flex: 0 0 auto;
+    max-height: 38%;
+  }
+  .desk-wrap {
+    min-height: 320px;
+  }
+}
