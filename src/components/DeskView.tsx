@@ -282,6 +282,8 @@ export function DeskView({ store, now }: Props) {
           onDragStart={begin}
           onContentChange={store.updateContent}
           onDateChange={store.updateDate}
+          onColorChange={store.updateColor}
+          onFontSizeChange={store.updateFontSize}
           onAdd={() => store.addTask()}
         />
 
@@ -305,6 +307,8 @@ export function DeskView({ store, now }: Props) {
             onDragStart={begin}
             onContentChange={store.updateContent}
             onDateChange={store.updateDate}
+            onColorChange={store.updateColor}
+            onFontSizeChange={store.updateFontSize}
           />
           <TrashBin
             ref={trashRef}

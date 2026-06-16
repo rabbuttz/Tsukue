@@ -88,4 +88,6 @@
   /* --- Type --- */
   --font: 'Roobert PRO', 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif;
+  /* 付箋の手書き風フォント（Klee One = クレー。日本語フル対応） */
+  --font-sticky: 'Klee One', 'Hiragino Maru Gothic ProN', 'Yu Gothic', Meiryo, cursive;
 }

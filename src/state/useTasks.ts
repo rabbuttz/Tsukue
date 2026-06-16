@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Position, StickyColor, Status, Task } from '../types';
+import type { Position, StickyColor, StickyFontSize, Status, Task } from '../types';
 import { STICKY_COLORS } from '../types';
 import { localStorageRepo } from '../storage/localStorageRepo';
 import type { TaskRepository } from '../storage/TaskRepository';
@@ -93,6 +93,16 @@ export function useTasks(repo: TaskRepository = localStorageRepo) {
     [update],
   );
 
+  const updateColor = useCallback(
+    (id: string, color: StickyColor) => update(id, { color }),
+    [update],
+  );
+
+  const updateFontSize = useCallback(
+    (id: string, fontSize: StickyFontSize) => update(id, { fontSize }),
+    [update],
+  );
+
   const moveToTray = useCallback(
     (id: string) => {
       // 計測を一時停止して累積に畳み込む（経過時間は保持）。
@@ -154,6 +164,8 @@ export function useTasks(repo: TaskRepository = localStorageRepo) {
     addTask,
     updateContent,
     updateDate,
+    updateColor,
+    updateFontSize,
     moveToTray,
     moveToDesk,
     updatePosition,

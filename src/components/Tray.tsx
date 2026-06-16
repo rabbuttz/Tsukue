@@ -1,5 +1,5 @@
 import { forwardRef, useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import type { Task } from '../types';
+import type { StickyColor, StickyFontSize, Task } from '../types';
 import { StickyNote } from './StickyNote';
 
 const GAP = 12; // 展開時の付箋の間隔
@@ -16,12 +16,25 @@ interface Props {
   onDragStart: (id: string, e: React.PointerEvent, el: HTMLElement) => void;
   onContentChange: (id: string, content: string) => void;
   onDateChange: (id: string, date: string) => void;
+  onColorChange: (id: string, color: StickyColor) => void;
+  onFontSizeChange: (id: string, size: StickyFontSize) => void;
   onAdd: () => void;
 }
 
 /** トレイ（To Do）。付箋を縦に積み、はみ出る分は上下の端で重ねる受け皿。 */
 export const Tray = forwardRef<HTMLDivElement, Props>(function Tray(
-  { tasks, now, dragId, hovered, onDragStart, onContentChange, onDateChange, onAdd },
+  {
+    tasks,
+    now,
+    dragId,
+    hovered,
+    onDragStart,
+    onContentChange,
+    onDateChange,
+    onColorChange,
+    onFontSizeChange,
+    onAdd,
+  },
   ref,
 ) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -121,6 +134,8 @@ export const Tray = forwardRef<HTMLDivElement, Props>(function Tray(
                 onDragStart={onDragStart}
                 onContentChange={onContentChange}
                 onDateChange={onDateChange}
+                onColorChange={onColorChange}
+                onFontSizeChange={onFontSizeChange}
               />
             </div>
           ))}

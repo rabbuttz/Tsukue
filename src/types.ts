@@ -4,6 +4,13 @@ export type StickyColor = 'yellow' | 'coral' | 'teal' | 'rose' | 'orange';
 
 export const STICKY_COLORS: StickyColor[] = ['yellow', 'coral', 'teal', 'rose', 'orange'];
 
+/** 付箋本文の文字サイズ（小・中・大）。未指定は 'm' 扱い。 */
+export type StickyFontSize = 's' | 'm' | 'l';
+
+export const STICKY_FONT_SIZES: StickyFontSize[] = ['s', 'm', 'l'];
+
+export const STICKY_FONT_PX: Record<StickyFontSize, number> = { s: 14, m: 17, l: 22 };
+
 export interface Position {
   x: number;
   y: number;
@@ -16,6 +23,8 @@ export interface Task {
   content: string;
   status: Status;
   color: StickyColor;
+  /** 本文の文字サイズ。未指定（既存データ）は 'm'。 */
+  fontSize?: StickyFontSize;
   /** 机面上の自由配置座標（机面の左上を基準としたpx）。 */
   position: Position;
   createdAt: number;

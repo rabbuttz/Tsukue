@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import type { Task } from '../types';
+import type { StickyColor, StickyFontSize, Task } from '../types';
 import type { PlacedItem, PlacedWidget } from '../storage/deskLayout';
 import { isPad } from '../state/useTasks';
 import { StickyNote } from './StickyNote';
@@ -27,6 +27,8 @@ interface Props {
   onDragStart: (id: string, e: React.PointerEvent, el: HTMLElement) => void;
   onContentChange: (id: string, content: string) => void;
   onDateChange: (id: string, date: string) => void;
+  onColorChange: (id: string, color: StickyColor) => void;
+  onFontSizeChange: (id: string, size: StickyFontSize) => void;
 }
 
 /** 机の上（In Progress / 自由配置）。右上には白紙パッドが常駐する。 */
@@ -49,6 +51,8 @@ export const DeskSurface = forwardRef<HTMLDivElement, Props>(function DeskSurfac
     onDragStart,
     onContentChange,
     onDateChange,
+    onColorChange,
+    onFontSizeChange,
   },
   ref,
 ) {
@@ -99,6 +103,8 @@ export const DeskSurface = forwardRef<HTMLDivElement, Props>(function DeskSurfac
               onDragStart={onDragStart}
               onContentChange={onContentChange}
               onDateChange={onDateChange}
+              onColorChange={onColorChange}
+              onFontSizeChange={onFontSizeChange}
               style={{ position: 'relative' }}
             />
           </div>
@@ -111,6 +117,8 @@ export const DeskSurface = forwardRef<HTMLDivElement, Props>(function DeskSurfac
             onDragStart={onDragStart}
             onContentChange={onContentChange}
             onDateChange={onDateChange}
+            onColorChange={onColorChange}
+            onFontSizeChange={onFontSizeChange}
             style={{ position: 'absolute', left: t.position.x, top: t.position.y }}
           />
         ),
